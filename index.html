@@ -3,468 +3,416 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kalkulačka kempovného – Kemp Branná 2026</title>
+<title>Srovnávač vodáckých cen – Ingetour vs Kanak</title>
 <style>
   :root{
-    --txt:#1d1d2b;
-    --muted:#6b6b80;
-    --accent:#34c759;        /* apple green */
-    --accent-d:#248a3d;
-    --amber:#ff9f0a;
-    --glass:rgba(255,255,255,.55);
-    --glass-strong:rgba(255,255,255,.72);
-    --line:rgba(120,120,150,.18);
+    --txt:#1d1d2b; --muted:#6b6b80;
+    --ing:#0a84ff; --ing-d:#0060d0;       /* Ingetour modrá */
+    --kan:#34c759; --kan-d:#248a3d;       /* Kanak zelená */
+    --win:#30b85e; --accent:#5e5ce6;
+    --glass:rgba(255,255,255,.55); --line:rgba(120,120,150,.18);
     --shadow:0 8px 30px rgba(40,50,80,.10);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0}
-  body{
-    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Arial,sans-serif;
-    color:var(--txt);line-height:1.5;padding:18px 14px 40px;min-height:100vh;
-    /* pastel aurora background */
+  body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Arial,sans-serif;
+    color:var(--txt);line-height:1.5;padding:18px 14px 48px;min-height:100vh;
     background:
-      radial-gradient(60% 50% at 15% 10%, #c8f0d8 0%, transparent 60%),
-      radial-gradient(55% 45% at 90% 5%, #cfe4ff 0%, transparent 55%),
-      radial-gradient(60% 55% at 85% 90%, #ffe1ec 0%, transparent 60%),
-      radial-gradient(65% 60% at 10% 95%, #fff3cf 0%, transparent 60%),
-      linear-gradient(160deg,#eef6f0,#eaf0fb);
-    background-attachment:fixed;
-  }
-  .wrap{max-width:680px;margin:0 auto}
+      radial-gradient(60% 50% at 12% 8%, #cfe4ff 0%, transparent 60%),
+      radial-gradient(55% 45% at 90% 6%, #c8f0d8 0%, transparent 55%),
+      radial-gradient(60% 55% at 88% 92%, #ffe1ec 0%, transparent 60%),
+      radial-gradient(65% 60% at 8% 95%, #fff3cf 0%, transparent 60%),
+      linear-gradient(160deg,#eef3fb,#eef7f0);
+    background-attachment:fixed;}
+  .wrap{max-width:720px;margin:0 auto;position:relative;z-index:1}
 
-  header{text-align:center;padding:8px 6px 22px}
-  header h1{margin:0 0 6px;font-size:1.7rem;font-weight:700;letter-spacing:-.02em}
-  header p{margin:0;color:var(--muted);font-size:.95rem}
+  /* plovoucí bublinky na pozadí */
+  .bubbles{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+  .bubbles span{position:absolute;bottom:-40px;display:block;width:14px;height:14px;border-radius:50%;
+    background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.9), rgba(120,190,255,.25));
+    animation:rise linear infinite;opacity:.5}
+  @keyframes rise{0%{transform:translateY(0) translateX(0) scale(.6);opacity:0}
+    10%{opacity:.6} 90%{opacity:.5} 100%{transform:translateY(-105vh) translateX(20px) scale(1);opacity:0}}
 
-  .tabs{display:flex;gap:6px;background:rgba(255,255,255,.45);backdrop-filter:blur(18px);
-    -webkit-backdrop-filter:blur(18px);padding:6px;border-radius:18px;margin-bottom:18px;
-    border:1px solid rgba(255,255,255,.6);box-shadow:var(--shadow)}
-  .tabs button{flex:1;padding:11px 8px;border:none;background:transparent;border-radius:13px;
-    cursor:pointer;font-size:.95rem;font-weight:700;color:var(--muted);transition:.18s}
-  .tabs button.on{background:#fff;color:var(--accent-d);box-shadow:0 2px 8px rgba(40,50,80,.16)}
-  select{padding:9px 12px;border:1px solid var(--line);border-radius:12px;font-size:.92rem;
-    font-weight:600;background:rgba(255,255,255,.7);color:var(--txt)}
-  .card{
-    background:var(--glass);
-    backdrop-filter:blur(22px) saturate(180%);
-    -webkit-backdrop-filter:blur(22px) saturate(180%);
-    border:1px solid rgba(255,255,255,.6);
-    border-radius:24px;padding:6px 18px;margin-bottom:16px;
-    box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.7);
-  }
-  .card h2{
-    font-size:.82rem;text-transform:uppercase;letter-spacing:.06em;
-    color:var(--accent-d);margin:16px 4px 4px;font-weight:700;
-  }
-  .row{
-    display:flex;align-items:center;justify-content:space-between;gap:14px;
-    padding:14px 4px;border-bottom:1px solid var(--line);
-  }
+  /* hlavička s vlnami */
+  header{text-align:center;padding:26px 6px 0;position:relative;border-radius:26px;margin-bottom:18px;overflow:hidden;
+    background:linear-gradient(160deg,#3aa0ff,#1f7be0 60%,#0a5fc0);
+    box-shadow:0 12px 34px rgba(20,90,180,.32), inset 0 1px 0 rgba(255,255,255,.4)}
+  header h1{margin:0 0 6px;font-size:1.6rem;font-weight:800;letter-spacing:-.02em;color:#fff;
+    text-shadow:0 2px 8px rgba(0,40,90,.35);position:relative;z-index:2}
+  header p{margin:0;color:rgba(255,255,255,.92);font-size:.92rem;position:relative;z-index:2}
+  .sailboat{font-size:1.9rem;position:relative;z-index:2;display:inline-block;animation:bob 3.2s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-7px) rotate(4deg)}}
+  .waves{display:block;width:100%;height:46px;margin-top:14px;position:relative;z-index:1}
+  .waves use{animation:swim 7s cubic-bezier(.55,.5,.45,.5) infinite}
+  .waves use:nth-child(1){animation-delay:-2s;animation-duration:8s;opacity:.5}
+  .waves use:nth-child(2){animation-delay:-3s;animation-duration:5s;opacity:.35}
+  .waves use:nth-child(3){animation-delay:-4s;animation-duration:6s;opacity:.85}
+  @keyframes swim{0%{transform:translate3d(-90px,0,0)}100%{transform:translate3d(85px,0,0)}}
+  .ricon{font-size:1.25rem;margin-right:4px;filter:drop-shadow(0 1px 2px rgba(0,60,120,.25))}
+
+  .card{background:var(--glass);backdrop-filter:blur(22px) saturate(180%);
+    -webkit-backdrop-filter:blur(22px) saturate(180%);border:1px solid rgba(255,255,255,.6);
+    border-radius:22px;padding:4px 18px;margin-bottom:16px;
+    box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.7);}
+  .card h2{font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);
+    margin:16px 4px 6px;font-weight:800}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:12px 4px;border-bottom:1px solid var(--line)}
   .row:last-child{border-bottom:none}
-  .row .lbl{font-size:1.02rem;font-weight:600;color:var(--txt)}
-  .row .sub{display:block;font-size:.82rem;color:var(--muted);font-weight:400;margin-top:2px}
+  .row .lbl{font-size:1rem;font-weight:600}
+  .row .sub{display:block;font-size:.8rem;color:var(--muted);font-weight:400;margin-top:2px}
 
-  /* stepper */
   .stepper{display:flex;align-items:center;gap:6px;flex:none}
-  .stepper button{
-    width:38px;height:38px;border:none;border-radius:50%;
-    background:rgba(255,255,255,.75);box-shadow:0 2px 6px rgba(40,50,80,.12);
-    font-size:1.35rem;color:var(--accent-d);cursor:pointer;line-height:1;
-    display:flex;align-items:center;justify-content:center;transition:transform .08s,background .15s;
-  }
-  .stepper button:active{transform:scale(.88);background:#fff}
-  .stepper input{
-    width:48px;text-align:center;font-size:1.1rem;font-weight:700;color:var(--txt);
-    padding:8px 2px;border:none;border-radius:12px;background:transparent;
-  }
+  .stepper button{width:36px;height:36px;border:none;border-radius:50%;background:rgba(255,255,255,.8);
+    box-shadow:0 2px 6px rgba(40,50,80,.12);font-size:1.3rem;color:var(--accent);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;transition:transform .08s}
+  .stepper button:active{transform:scale(.88)}
+  .stepper input{width:48px;text-align:center;font-size:1.05rem;font-weight:700;padding:8px 2px;
+    border:none;border-radius:12px;background:transparent}
   .stepper input:focus{outline:2px solid var(--accent);background:rgba(255,255,255,.6)}
 
-  /* segmented control */
   .seg{display:flex;gap:4px;background:rgba(120,120,150,.12);padding:4px;border-radius:14px}
-  .seg button{
-    padding:9px 16px;border:none;background:transparent;border-radius:11px;
-    cursor:pointer;font-size:.92rem;font-weight:600;color:var(--muted);transition:.15s;
-  }
-  .seg button.on{background:#fff;color:var(--accent-d);box-shadow:0 2px 6px rgba(40,50,80,.14)}
+  .seg button{padding:9px 14px;border:none;background:transparent;border-radius:11px;cursor:pointer;
+    font-size:.9rem;font-weight:700;color:var(--muted);transition:.15s}
+  .seg button.on{background:#fff;color:var(--accent);box-shadow:0 2px 6px rgba(40,50,80,.14)}
 
-  /* toggle */
-  .toggle{position:relative;width:52px;height:31px;flex:none}
+  .toggle{position:relative;width:50px;height:30px;flex:none}
   .toggle input{opacity:0;width:0;height:0}
-  .slider{position:absolute;inset:0;background:rgba(120,120,150,.3);border-radius:31px;
-    transition:.25s;cursor:pointer}
-  .slider:before{content:"";position:absolute;width:27px;height:27px;left:2px;top:2px;
-    background:#fff;border-radius:50%;transition:.25s;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+  .slider{position:absolute;inset:0;background:rgba(120,120,150,.3);border-radius:30px;transition:.25s;cursor:pointer}
+  .slider:before{content:"";position:absolute;width:26px;height:26px;left:2px;top:2px;background:#fff;
+    border-radius:50%;transition:.25s;box-shadow:0 2px 6px rgba(0,0,0,.2)}
   .toggle input:checked+.slider{background:var(--accent)}
-  .toggle input:checked+.slider:before{transform:translateX(21px)}
+  .toggle input:checked+.slider:before{transform:translateX(20px)}
 
-  /* total card */
-  .total{
-    background:linear-gradient(150deg, rgba(52,199,89,.92), rgba(36,138,61,.92));
-    backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
-    border:1px solid rgba(255,255,255,.4);color:#fff;text-align:center;
-    padding:24px 22px;box-shadow:0 12px 36px rgba(36,138,61,.32), inset 0 1px 0 rgba(255,255,255,.4);
-  }
-  .total .cap{font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;opacity:.9}
-  .total .big{font-size:2.6rem;font-weight:800;letter-spacing:-.02em;margin:4px 0 2px}
-  .total .pp{font-size:.92rem;opacity:.92}
-  .grand{background:linear-gradient(150deg, rgba(94,92,230,.94), rgba(60,58,180,.94));
-    border:1px solid rgba(255,255,255,.4);color:#fff;text-align:center;padding:24px 22px;
-    box-shadow:0 12px 36px rgba(60,58,180,.32), inset 0 1px 0 rgba(255,255,255,.4)}
-  .grand .cap{font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;opacity:.9}
-  .grand .big{font-size:2.6rem;font-weight:800;letter-spacing:-.02em;margin:4px 0 2px}
-  .grand .pp{font-size:.92rem;opacity:.92}
-  .breakdown{margin-top:18px;text-align:left;font-size:.92rem}
-  .breakdown .b{display:flex;justify-content:space-between;gap:10px;padding:8px 0;
-    border-bottom:1px solid rgba(255,255,255,.22)}
-  .breakdown .b:last-child{border:none}
-  .breakdown .b .q{opacity:.82;font-size:.82rem;font-weight:400;display:block;margin-top:1px}
-  .breakdown .b .amt{font-weight:700;white-space:nowrap}
+  /* srovnávací karty */
+  .cmp{display:flex;gap:10px;padding:8px 0 4px}
+  .col{flex:1;border-radius:18px;padding:14px 12px;text-align:center;position:relative;
+    background:rgba(255,255,255,.5);border:1.5px solid transparent;transition:.2s}
+  .col .who{font-size:.78rem;font-weight:800;letter-spacing:.02em}
+  .col.ing .who{color:var(--ing-d)} .col.kan .who{color:var(--kan-d)}
+  .col .v{font-size:1.6rem;font-weight:800;letter-spacing:-.02em;margin:6px 0 2px}
+  .col .pp{font-size:.76rem;color:var(--muted)}
+  .col.win{background:rgba(48,184,94,.12);border-color:rgba(48,184,94,.55);
+    box-shadow:0 6px 18px rgba(48,184,94,.18)}
+  .col.win:after{content:"✓ levnější";position:absolute;top:-10px;left:50%;transform:translateX(-50%);
+    background:var(--win);color:#fff;font-size:.68rem;font-weight:800;padding:3px 9px;border-radius:20px;white-space:nowrap}
+  .delta{text-align:center;font-size:.84rem;color:var(--muted);padding:6px 0 12px}
+  .delta b{color:var(--win)}
 
-  .bonus{
-    background:rgba(255,248,225,.85);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
-    border:1px solid rgba(255,159,10,.4);border-radius:20px;padding:14px 16px;
-    font-size:.9rem;color:#7a4a00;margin-bottom:16px;box-shadow:var(--shadow);
-  }
-  .bonus b{color:#b45309}
+  .bd{font-size:.85rem;margin:4px 0 10px}
+  .bd .b{display:flex;justify-content:space-between;gap:10px;padding:4px 2px;border-bottom:1px dashed var(--line)}
+  .bd .b:last-child{border:none}
+  .bd .b.tot{font-weight:800;border-top:1px solid var(--line);border-bottom:none;padding-top:7px;margin-top:2px}
 
-  .scenarios{display:flex;gap:10px;padding:6px 0 12px}
-  .scn{flex:1;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.7);
-    border-radius:18px;padding:14px;text-align:center;box-shadow:0 2px 10px rgba(40,50,80,.08)}
-  .scn .t{font-size:.78rem;color:var(--muted);font-weight:600}
-  .scn .v{font-size:1.45rem;font-weight:800;letter-spacing:-.02em;margin:4px 0 2px}
-  .scn .pp{font-size:.78rem;color:var(--muted)}
-  .scn.save{border-color:rgba(52,199,89,.5);background:rgba(210,247,224,.7)}
-  .scn .diff{font-size:.8rem;font-weight:700;color:var(--accent-d);margin-top:4px}
-  details{margin:2px 6px 18px;font-size:.86rem;color:var(--muted)}
-  summary{cursor:pointer;color:var(--accent-d);font-weight:600;padding:6px 0}
-  footer{text-align:center;font-size:.78rem;color:var(--muted);padding:8px 0 10px}
+  .total{background:linear-gradient(150deg, rgba(94,92,230,.95), rgba(60,58,180,.95));
+    color:#fff;border:1px solid rgba(255,255,255,.4);
+    box-shadow:0 12px 36px rgba(60,58,180,.3), inset 0 1px 0 rgba(255,255,255,.4)}
+  .total h2{color:rgba(255,255,255,.85)}
+  .total .cmp .col{background:rgba(255,255,255,.16)}
+  .total .cmp .col .pp{color:rgba(255,255,255,.8)}
+  .total .cmp .col.win{background:rgba(255,255,255,.28);border-color:#fff}
+  .total .cmp .col.win:after{background:#fff;color:var(--accent)}
+  .reco{background:rgba(255,255,255,.16);border-radius:16px;padding:14px;margin:6px 0 12px;font-size:.9rem}
+  .reco b{font-weight:800}
+
+  details{margin:2px 6px 18px;font-size:.84rem;color:var(--muted)}
+  summary{cursor:pointer;color:var(--accent);font-weight:700;padding:6px 0}
+  details h3{font-size:.86rem;margin:10px 0 4px;color:var(--txt)}
+  details a{color:var(--ing-d)}
+  footer{text-align:center;font-size:.76rem;color:var(--muted);padding:8px 0}
 </style>
 </head>
 <body>
+<div class="bubbles" id="bubbles"></div>
 <div class="wrap">
   <header>
-    <h1>🛶 Vodácká kalkulačka</h1>
-    <p id="subtitle">Kemp Branná (Kanak) · ceník 2026 · pro 14 vodáků</p>
+    <div class="sailboat">⛵️</div>
+    <h1>Ingetour vs Kanak</h1>
+    <p>Zadej jednou počty — porovná lodě, ubytování i celkovou cenu</p>
+    <svg class="waves" viewBox="0 24 150 28" preserveAspectRatio="none">
+      <defs><path id="wv" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18v44h-352z"/></defs>
+      <use href="#wv" x="48" y="0" fill="rgba(255,255,255,.5)"/>
+      <use href="#wv" x="48" y="3" fill="rgba(255,255,255,.35)"/>
+      <use href="#wv" x="48" y="6" fill="rgba(238,247,240,.95)"/>
+    </svg>
   </header>
 
-  <div class="tabs" id="tabs">
-    <button data-tab="kemp" class="on">⛺ Kemp · Kanak</button>
-    <button data-tab="lode">🛶 Lodě · Inge Tour</button>
-  </div>
-
-  <div id="tabKemp">
   <div class="card">
-    <h2>Sezóna a pobyt</h2>
+    <h2>Sezóna a délka</h2>
     <div class="row">
       <div><div class="lbl">Sezóna</div>
-        <span class="sub">Hlavní 14.5.–23.8. · Vedlejší 24.4.–13.5. a 24.8.–13.9.</span></div>
-      <div class="seg" id="seasonSeg">
-        <button data-s="main" class="on">Hlavní</button>
-        <button data-s="side">Vedlejší</button>
-      </div>
+        <span class="sub">Hlavní = léto (cca 21.5.–23.8.) · Mimo = jaro/podzim</span></div>
+      <div class="seg" id="seasonSeg"><button data-s="h" class="on">Hlavní</button><button data-s="m">Mimo</button></div>
     </div>
-    <div class="row">
-      <div class="lbl">Počet nocí</div>
+    <div class="row"><div><div class="lbl">Dní na vodě</div><span class="sub">délka půjčení lodí</span></div>
+      <div class="stepper"><button data-step="boatDays" data-d="-1">−</button>
+        <input id="boatDays" type="number" min="0" value="0"><button data-step="boatDays" data-d="1">+</button></div></div>
+    <div class="row"><div><div class="lbl">Nocí v kempu</div></div>
       <div class="stepper"><button data-step="nights" data-d="-1">−</button>
-        <input id="nights" type="number" min="1" value="2"><button data-step="nights" data-d="1">+</button></div>
-    </div>
+        <input id="nights" type="number" min="0" value="0"><button data-step="nights" data-d="1">+</button></div></div>
+    <div class="row"><div><div class="lbl">Dospělí</div><span class="sub">osoby nad 15 let</span></div>
+      <div class="stepper"><button data-step="adults" data-d="-1">−</button>
+        <input id="adults" type="number" min="0" value="0"><button data-step="adults" data-d="1">+</button></div></div>
+    <div class="row"><div><div class="lbl">Děti</div><span class="sub">u Kanak do 8 let zdarma</span></div>
+      <div class="stepper"><button data-step="kids" data-d="-1">−</button>
+        <input id="kids" type="number" min="0" value="0"><button data-step="kids" data-d="1">+</button></div></div>
   </div>
 
   <div class="card">
-    <h2>Lidé</h2>
-    <div class="row">
-      <div><div class="lbl">Vodák nad 15 let</div><span class="sub">190 / 220 Kč za noc</span></div>
-      <div class="stepper"><button data-step="ad" data-d="-1">−</button>
-        <input id="ad" type="number" min="0" value="14"><button data-step="ad" data-d="1">+</button></div>
-    </div>
-    <div class="row">
-      <div><div class="lbl">Vodák 9–15 let</div><span class="sub">110 / 140 Kč za noc</span></div>
-      <div class="stepper"><button data-step="teen" data-d="-1">−</button>
-        <input id="teen" type="number" min="0" value="0"><button data-step="teen" data-d="1">+</button></div>
-    </div>
-    <div class="row">
-      <div><div class="lbl">Vodák do 8 let</div><span class="sub">zdarma</span></div>
-      <div class="stepper"><button data-step="kid" data-d="-1">−</button>
-        <input id="kid" type="number" min="0" value="0"><button data-step="kid" data-d="1">+</button></div>
-    </div>
+    <h2>Lodě <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· počet kusů</span></h2>
+    <div id="boatInputs"></div>
   </div>
 
   <div class="card">
-    <h2>Stany</h2>
-    <div class="row">
-      <div><div class="lbl">Spát po dvou</div><span class="sub">Dopočítá stany podle lidí (14 → 7)</span></div>
-      <label class="toggle"><input type="checkbox" id="autoTent" checked><span class="slider"></span></label>
-    </div>
-    <div class="row">
-      <div><div class="lbl">Stan / celta</div><span class="sub">190 / 220 Kč za noc</span></div>
-      <div class="stepper"><button data-step="tent" data-d="-1">−</button>
-        <input id="tent" type="number" min="0" value="7"><button data-step="tent" data-d="1">+</button></div>
-    </div>
-    <div class="row">
-      <div><div class="lbl">Párty stan / přístřešek</div><span class="sub">280 / 330 Kč za noc</span></div>
-      <div class="stepper"><button data-step="party" data-d="-1">−</button>
-        <input id="party" type="number" min="0" value="0"><button data-step="party" data-d="1">+</button></div>
-    </div>
+    <h2>Ubytování <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· počet kusů</span></h2>
+    <div id="campInputs"></div>
   </div>
 
   <div class="card">
-    <h2>Doprava a další</h2>
-    <div class="row">
-      <div><div class="lbl">Osobní auto / karavan</div><span class="sub">190 / 220 Kč za noc</span></div>
-      <div class="stepper"><button data-step="car" data-d="-1">−</button>
-        <input id="car" type="number" min="0" value="0"><button data-step="car" data-d="1">+</button></div>
-    </div>
-    <div class="row">
-      <div><div class="lbl">Přívěs / motocykl</div><span class="sub">110 / 140 Kč za noc</span></div>
-      <div class="stepper"><button data-step="moto" data-d="-1">−</button>
-        <input id="moto" type="number" min="0" value="0"><button data-step="moto" data-d="1">+</button></div>
-    </div>
-    <div class="row">
-      <div><div class="lbl">Pes / kočka</div><span class="sub">80 / 100 Kč za noc</span></div>
-      <div class="stepper"><button data-step="dog" data-d="-1">−</button>
-        <input id="dog" type="number" min="0" value="0"><button data-step="dog" data-d="1">+</button></div>
-    </div>
-    <div class="row">
-      <div><div class="lbl">Elektrická přípojka</div><span class="sub">120 / 150 Kč za noc</span></div>
-      <div class="stepper"><button data-step="el" data-d="-1">−</button>
-        <input id="el" type="number" min="0" value="0"><button data-step="el" data-d="1">+</button></div>
-    </div>
+    <h2>Doprava, slevy, doplňky</h2>
+    <div class="row"><div><div class="lbl">Svoz lodí (Kanak)</div>
+      <span class="sub">Kanak +500 Kč · Ingetour má přepravu v ceně</span></div>
+      <label class="toggle"><input type="checkbox" id="kanTransport" checked><span class="slider"></span></label></div>
+    <div class="row"><div><div class="lbl">Přeprava zavazadel</div>
+      <span class="sub">60 Kč/os/den u obou (Kanak min. 480/den)</span></div>
+      <label class="toggle"><input type="checkbox" id="bag"><span class="slider"></span></label></div>
+    <div class="row"><div><div class="lbl">Sleva organizátora (Ingetour)</div>
+      <span class="sub">16+ osob → 2 místa (1 kánoe) zdarma</span></div>
+      <label class="toggle"><input type="checkbox" id="orgDisc" checked><span class="slider"></span></label></div>
+    <div class="row"><div><div class="lbl">Množstevní sleva (Ingetour)</div>
+      <span class="sub">% z ceny lodí po slevě organizátora</span></div>
+      <div class="stepper"><button data-step="qtyPct" data-d="-5">−</button>
+        <input id="qtyPct" type="number" min="0" max="100" step="5" value="10" style="width:58px"><button data-step="qtyPct" data-d="5">+</button></div></div>
+  </div>
+
+  <button class="ex" id="loadExample">Načíst ukázkový příklad (14 lidí, 4 dny)</button>
+
+  <div class="card">
+    <h2>🛶 Lodě — srovnání</h2>
+    <div class="cmp" id="boatCmp"></div>
+    <div class="delta" id="boatDelta"></div>
+    <div class="bd" id="boatBd"></div>
+  </div>
+
+  <div class="card">
+    <h2>⛺ Ubytování — srovnání</h2>
+    <div class="cmp" id="campCmp"></div>
+    <div class="delta" id="campDelta"></div>
+    <div class="bd" id="campBd"></div>
   </div>
 
   <div class="card total">
-    <div class="cap">Celkem za pobyt</div>
-    <div class="big" id="grand">—</div>
-    <div class="pp" id="perPerson"></div>
-    <div class="breakdown" id="breakdown"></div>
+    <h2>💰 Celkem — vše dohromady</h2>
+    <div class="cmp" id="allCmp"></div>
+    <div class="reco" id="reco"></div>
   </div>
-
-  <div class="bonus" id="bonus"></div>
 
   <details>
-    <summary>Poznámky k ceníku</summary>
-    <p>Ceny jsou za noc. Děti do 8 let mají ubytování zdarma. Platba pouze v hotovosti
-    na recepci (v kempu jsou 2 bankomaty). Stany a auta jsou bez rezervace, místa je dostatek.
-    Bonus Kanak: přesnou výši stanovuje recepce — zde je pouze orientační odhad.</p>
+    <summary>Zdroje cen, mapování lodí a poznámky</summary>
+    <h3>Lodě (cena za loď/den, vícedenní výlet)</h3>
+    <p>Srovnávám rovnocenné typy: <b>kánoe</b> = Ingetour Vydra / Kanak Vydra · <b>malý raft</b> = Ingetour
+    Colorado 360 / Kanak Ontário 420 · <b>velký raft</b> = Ingetour Colorado 450 / Kanak Colorado 450 ·
+    kajak a paddleboard přímo. Ingetour má v ceně přepravu lodí; Kanak účtuje svoz zvlášť.</p>
+    <h3>Ubytování (za noc)</h3>
+    <p>Kanak (Kemp Branná) účtuje osobu zvlášť dle věku (do 8 zdarma, 9–15, nad 15). Ingetour (Kemp Pod
+    Hrází) má osoba/dítě/stan/auto/karavan. Karavan je u Ingetour výrazně dražší (530 vs 220 Kč).
+    Elektřina u Ingetour vychází z eKempy a vypadá prohozená mezi sezónami — ověř na recepci.</p>
+    <h3>Slevy</h3>
+    <p>Ingetour: sleva organizátora (16+) a množstevní sleva se počítají do ceny lodí. Kanak místo slevy
+    dává <b>bonus v bankovkách Kanak</b> (poukázky na útratu) — to zde není odečteno, přičti si ho jako výhodu navíc.</p>
+    <h3>Zdroje</h3>
+    <p>Ingetour lodě: ceník zaslaný uživatelem (2026). Ingetour kemp:
+    <a href="https://www.ingetour.cz/kempy/vyssi-brod-kemp-pod-hrazi-kemp">ingetour.cz</a> /
+    <a href="https://www.ekempy.cz/jihocesky-kraj/cesky-krumlov/259-kemp-pod-hrazi-vyssi-brod">eKempy.cz</a>.
+    Kanak lodě: <a href="https://www.kanak.cz/pujcovna-lodi-vltava/nabidka-a-cenik/">kanak.cz</a>.
+    Kanak kemp: <a href="https://www.kanak.cz/kemp-branna/cenik-kempu/">kanak.cz ceník kempu</a>.
+    Ceny jsou orientační, ověř aktuální stav u provozovatelů.</p>
   </details>
-  </div><!-- /tabKemp -->
 
-  <div id="tabLode" style="display:none">
-    <div class="card">
-      <h2>Rafty</h2>
-      <div class="row">
-        <div><div class="lbl">Typ raftu</div><span class="sub" id="raftSub">Colorado 450 · vícedenní</span></div>
-        <select id="raftType">
-          <option value="1500">Colorado 450 (1 500 / den)</option>
-          <option value="250">Jednodenní (250 / den)</option>
-          <option value="custom">Vlastní cena…</option>
-        </select>
-      </div>
-      <div class="row" id="rowCustom" style="display:none">
-        <div class="lbl">Cena za raft / den</div>
-        <div class="stepper"><button data-step="raftPrice" data-d="-50">−</button>
-          <input id="raftPrice" type="number" min="0" step="50" value="1500" style="width:72px">
-          <button data-step="raftPrice" data-d="50">+</button></div>
-      </div>
-      <div class="row">
-        <div><div class="lbl">Počet raftů</div><span class="sub">cca 6 osob na raft</span></div>
-        <div class="stepper"><button data-step="rafts" data-d="-1">−</button>
-          <input id="rafts" type="number" min="1" value="3"><button data-step="rafts" data-d="1">+</button></div>
-      </div>
-      <div class="row">
-        <div class="lbl">Počet dnů</div>
-        <div class="stepper"><button data-step="days" data-d="-1">−</button>
-          <input id="days" type="number" min="1" value="2"><button data-step="days" data-d="1">+</button></div>
-      </div>
-      <div class="row">
-        <div class="lbl">Počet osob</div>
-        <div class="stepper"><button data-step="ppl" data-d="-1">−</button>
-          <input id="ppl" type="number" min="1" value="14"><button data-step="ppl" data-d="1">+</button></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Slevy</h2>
-      <div class="row">
-        <div><div class="lbl">Sleva za počet osob</div><span class="sub">odečte se v Kč</span></div>
-        <div class="stepper"><button data-step="discPpl" data-d="-100">−</button>
-          <input id="discPpl" type="number" min="0" step="100" value="1000" style="width:72px">
-          <button data-step="discPpl" data-d="100">+</button></div>
-      </div>
-      <div class="row">
-        <div><div class="lbl">Množstevní sleva</div><span class="sub">% z ceny po 1. slevě</span></div>
-        <div class="stepper"><button data-step="discQty" data-d="-5">−</button>
-          <input id="discQty" type="number" min="0" max="100" step="5" value="10" style="width:60px">
-          <button data-step="discQty" data-d="5">+</button></div>
-      </div>
-    </div>
-
-    <div class="card total">
-      <div class="cap">Cena za rafty</div>
-      <div class="big" id="raftGrand">—</div>
-      <div class="pp" id="raftPP"></div>
-      <div class="breakdown" id="raftBreak"></div>
-    </div>
-
-    <details>
-      <summary>Poznámky – Inge Tour</summary>
-      <p>Výpočet: rafty × dny × cena za den = cena před slevou. Od ní se odečte sleva
-      za počet osob (v Kč), výsledek se vynásobí množstevní slevou. Hodnoty slev jsou
-      orientační dle zadání — uprav je podle aktuální nabídky půjčovny.</p>
-    </details>
-  </div><!-- /tabLode -->
-
-  <div class="card grand">
-    <div class="cap">Celkem za vše · kemp + lodě</div>
-    <div class="big" id="allGrand">—</div>
-    <div class="pp" id="allPP"></div>
-    <div class="breakdown" id="allBreak"></div>
-  </div>
-
-  <footer>Orientační výpočet · není závaznou nabídkou kempu ani půjčovny</footer>
+  <footer>Orientační srovnání · není závaznou nabídkou ani jedné půjčovny</footer>
 </div>
 
 <script>
-const P = {
-  ad:[190,220], teen:[110,140], kid:[0,0],
-  tent:[190,220], party:[280,330],
-  car:[190,220], moto:[110,140], dog:[80,100], el:[120,150]
-};
-const LABEL = {
-  ad:"Vodáci nad 15 let", teen:"Vodáci 9–15 let", kid:"Vodáci do 8 let",
-  tent:"Stany / celty", party:"Párty stany", car:"Auta / karavany",
-  moto:"Přívěsy / motocykly", dog:"Psi / kočky", el:"El. přípojky"
-};
-let season = "main";
-let KEMP_TOTAL = 0, RAFT_TOTAL = 0;
+const $=id=>document.getElementById(id);
+const num=id=>Math.max(0,parseInt($(id).value)||0);
+const fmt=n=>Math.round(n).toLocaleString("cs-CZ");
+let season="h"; // h = hlavní/léto, m = mimo
 
-const $ = id => document.getElementById(id);
-const val = id => Math.max(0, parseInt($(id).value)||0);
+// ceny lodí vícedenní: [ingetour_hlavní, ingetour_mimo, kanak_hlavní, kanak_mimo]
+const BOATS=[
+  {id:"kanoe", ic:"🛶", name:"Kánoe (2 os.)",      sub:"Vydra · Vydra",            p:[550,490,520,440]},
+  {id:"raftS", ic:"🚣", name:"Malý raft (3–5 os.)",sub:"Colorado 360 · Ontário 420",p:[1100,990,1450,1200]},
+  {id:"raftL", ic:"🛟", name:"Velký raft (5–6 os.)",sub:"Colorado 450 · Colorado 450",p:[1500,1290,1550,1300]},
+  {id:"kajak", ic:"🚣‍♀️", name:"Kajak (1 os.)",      sub:"kajak · Bert",             p:[500,450,400,320]},
+  {id:"paddle",ic:"🏄", name:"Paddleboard (1 os.)",sub:"SUP · SUP",                p:[600,500,400,320]},
+];
+// ceny ubytování za noc: [ingetour_hlavní, ingetour_mimo, kanak_hlavní, kanak_mimo]
+const CAMP=[
+  {id:"stan",   ic:"⛺", name:"Stan / celta",      p:[190,180,220,190]},
+  {id:"auto",   ic:"🚗", name:"Osobní auto",       p:[190,180,220,190]},
+  {id:"karavan",ic:"🚐", name:"Karavan",           sub:"Ingetour dráž (530 vs 220)", p:[530,460,220,190]},
+  {id:"pes",    ic:"🐶", name:"Pes / zvíře",       p:[80,80,100,80]},
+  {id:"elektr", ic:"🔌", name:"El. přípojka",      sub:"Ingetour dle eKempy",       p:[250,350,150,120]},
+];
+// ceny osob za noc: [ing_h, ing_m, kan_h, kan_m]
+const PERSON={adult:[190,180,220,190], kid:[100,90,140,110]}; // Kanak kid = 9–15; do 8 zdarma
 
-function nocSlovo(n){ if(n===1)return"noc"; if(n>=2&&n<=4)return"noci"; return"nocí"; }
+function ingIdx(){return season==="h"?0:1;}
+function kanIdx(){return season==="h"?2:3;}
+
+function buildInputs(){
+  $("boatInputs").innerHTML=BOATS.map(b=>`
+    <div class="row"><div><div class="lbl"><span class="ricon">${b.ic}</span>${b.name}</div><span class="sub">${b.sub||""}</span></div>
+      <div class="stepper"><button data-step="q_${b.id}" data-d="-1">−</button>
+        <input id="q_${b.id}" type="number" min="0" value="0"><button data-step="q_${b.id}" data-d="1">+</button></div></div>`).join("");
+  $("campInputs").innerHTML=CAMP.map(c=>`
+    <div class="row"><div><div class="lbl"><span class="ricon">${c.ic}</span>${c.name}</div><span class="sub">${c.sub||""}</span></div>
+      <div class="stepper"><button data-step="c_${c.id}" data-d="-1">−</button>
+        <input id="c_${c.id}" type="number" min="0" value="0"><button data-step="c_${c.id}" data-d="1">+</button></div></div>`).join("");
+  document.querySelectorAll("#boatInputs input,#campInputs input").forEach(i=>i.addEventListener("input",calc));
+}
 
 function calc(){
-  const idx = season==="main"?1:0;
-  const nights = Math.max(1, val("nights"));
-  let total = 0; const lines = [];
-  for(const k in P){
-    const q = val(k);
-    if(q<=0) continue;
-    const unit = P[k][idx];
-    const sub = q*unit*nights;
-    total += sub;
-    if(unit===0) lines.push([LABEL[k], q+"× zdarma", 0]);
-    else lines.push([LABEL[k], q+"× "+unit+" Kč × "+nights+" "+nocSlovo(nights), sub]);
+  const days=num("boatDays"), nights=num("nights");
+  const adults=num("adults"), kids=num("kids"), people=adults+kids;
+  const ii=ingIdx(), ki=kanIdx();
+
+  // ---- LODĚ ----
+  let boatIng=0, boatKan=0; const blines=[];
+  BOATS.forEach(b=>{
+    const q=num("q_"+b.id); if(q<=0) return;
+    const si=q*days*b.p[ii], sk=q*days*b.p[ki];
+    boatIng+=si; boatKan+=sk;
+    blines.push(`<div class="b"><span>${q}× ${b.name}</span><span>I ${fmt(si)} · K ${fmt(sk)} Kč</span></div>`);
+  });
+  // Ingetour slevy
+  let org=0;
+  if($("orgDisc").checked && people>=16) org=BOATS[0].p[ii]*days; // 1 kánoe zdarma
+  const ingAfterOrg=Math.max(0,boatIng-org);
+  const qPct=num("qtyPct");
+  const ingQtyDisc=Math.round(ingAfterOrg*qPct/100);
+  let boatIngNet=ingAfterOrg-ingQtyDisc;
+  // Kanak svoz lodí
+  const kanTrans=$("kanTransport").checked ? 500 : 0;
+  let boatKanNet=boatKan+kanTrans;
+  // zavazadla (oba)
+  let bag=0;
+  if($("bag").checked && days>0 && people>0){
+    bag=60*people*days;
+    boatIngNet+=bag;
+    boatKanNet+=Math.max(bag,480*days); // Kanak min 480/den
   }
-  $("grand").textContent = total.toLocaleString("cs-CZ")+" Kč";
-  KEMP_TOTAL = total;
-  const people = val("ad")+val("teen")+val("kid");
-  renderGrand();
-  $("perPerson").textContent = people>0
-    ? "≈ "+Math.round(total/people).toLocaleString("cs-CZ")+" Kč na osobu · "+people+" lidí · "+nights+" "+nocSlovo(nights)
-    : "";
-  $("breakdown").innerHTML = lines.map(l=>
-    `<div class="b"><span>${l[0]}<span class="q">${l[1]}</span></span><span class="amt">${l[2].toLocaleString("cs-CZ")} Kč</span></div>`
-  ).join("");
 
-  const bonusEl = $("bonus");
-  if(nights>=3 || people>=5){
-    const est = Math.round(total*0.10/10)*10;
-    bonusEl.style.display="block";
-    bonusEl.innerHTML = `🎁 <b>Bonus Kanak:</b> máte nárok (${nights>=3?"3+ nocí":"hromadná platba"}).
-      Orientačně ≈ <b>${est.toLocaleString("cs-CZ")} Kč</b> v bankovkách Kanak na služby kempu, půjčovny a restaurace.
-      Přesnou výši určí recepce.`;
-  } else { bonusEl.style.display="none"; }
+  // ---- UBYTOVÁNÍ ----
+  let campIng=0, campKan=0; const clines=[];
+  const aI=adults*PERSON.adult[ii]*nights, aK=adults*PERSON.adult[ki]*nights;
+  const kI=kids*PERSON.kid[ii]*nights, kK=kids*PERSON.kid[ki]*nights; // Kanak: do 8 zdarma → uživatel počítá jen 9–15
+  campIng+=aI+kI; campKan+=aK+kK;
+  if(adults>0) clines.push(`<div class="b"><span>${adults}× dospělý · ${nights} n.</span><span>I ${fmt(aI)} · K ${fmt(aK)} Kč</span></div>`);
+  if(kids>0) clines.push(`<div class="b"><span>${kids}× dítě · ${nights} n.</span><span>I ${fmt(kI)} · K ${fmt(kK)} Kč</span></div>`);
+  CAMP.forEach(c=>{
+    const q=num("c_"+c.id); if(q<=0) return;
+    const si=q*c.p[ii]*nights, sk=q*c.p[ki]*nights;
+    campIng+=si; campKan+=sk;
+    clines.push(`<div class="b"><span>${q}× ${c.name} · ${nights} n.</span><span>I ${fmt(si)} · K ${fmt(sk)} Kč</span></div>`);
+  });
+
+  // ---- VÝPIS ----
+  renderCmp("boatCmp", boatIngNet, boatKanNet, people);
+  renderDelta("boatDelta", boatIngNet, boatKanNet);
+  let bb=blines.join("")||`<div class="b"><span style="opacity:.6">Žádné lodě</span><span></span></div>`;
+  if(org>0) bb+=`<div class="b"><span>Ingetour – sleva organizátora</span><span>− ${fmt(org)} Kč</span></div>`;
+  if(ingQtyDisc>0) bb+=`<div class="b"><span>Ingetour – množstevní ${qPct}%</span><span>− ${fmt(ingQtyDisc)} Kč</span></div>`;
+  if(kanTrans>0) bb+=`<div class="b"><span>Kanak – svoz lodí</span><span>+ ${fmt(kanTrans)} Kč</span></div>`;
+  if(bag>0) bb+=`<div class="b"><span>Zavazadla (60/os/den)</span><span>I ${fmt(bag)} · K ${fmt(Math.max(bag,480*days))} Kč</span></div>`;
+  bb+=`<div class="b tot"><span>Lodě celkem</span><span>I ${fmt(boatIngNet)} · K ${fmt(boatKanNet)} Kč</span></div>`;
+  $("boatBd").innerHTML=bb;
+
+  renderCmp("campCmp", campIng, campKan, people);
+  renderDelta("campDelta", campIng, campKan);
+  let cb=clines.join("")||`<div class="b"><span style="opacity:.6">Žádné ubytování</span><span></span></div>`;
+  cb+=`<div class="b tot"><span>Ubytování celkem</span><span>I ${fmt(campIng)} · K ${fmt(campKan)} Kč</span></div>`;
+  $("campBd").innerHTML=cb;
+
+  // ---- CELKEM ----
+  const totIng=boatIngNet+campIng, totKan=boatKanNet+campKan;
+  renderCmp("allCmp", totIng, totKan, people);
+  renderReco(boatIngNet, boatKanNet, campIng, campKan, totIng, totKan, people);
 }
 
-document.querySelectorAll("[data-step]").forEach(b=>{
-  b.addEventListener("click",()=>{
-    const f=$(b.dataset.step); f.value=Math.max(0,(parseInt(f.value)||0)+(+b.dataset.d));
-    if(["ad","teen","kid"].includes(f.id)) syncTents();
-    calc();
-  });
+function renderCmp(id,ing,kan,people){
+  const ppI=people>0?` <span class="pp">${fmt(ing/people)} Kč/os.</span>`:"";
+  const ppK=people>0?` <span class="pp">${fmt(kan/people)} Kč/os.</span>`:"";
+  $(id).innerHTML=`
+    <div class="col ing ${ing<kan?'win':''}"><div class="who">INGETOUR</div><div class="v">${fmt(ing)} Kč</div><div class="pp">${people>0?fmt(ing/people)+" Kč/os.":""}</div></div>
+    <div class="col kan ${kan<ing?'win':''}"><div class="who">KANAK</div><div class="v">${fmt(kan)} Kč</div><div class="pp">${people>0?fmt(kan/people)+" Kč/os.":""}</div></div>`;
+}
+function renderDelta(id,ing,kan){
+  const d=Math.abs(ing-kan);
+  if(d===0||(ing===0&&kan===0)){$(id).innerHTML="";return;}
+  const who=ing<kan?"Ingetour":"Kanak";
+  $(id).innerHTML=`<b>${who}</b> levnější o <b>${fmt(d)} Kč</b>`;
+}
+function renderReco(bi,bk,ci,ck,ti,tk,people){
+  const mix=Math.min(bi,bk)+Math.min(ci,ck);
+  const bestSingle=Math.min(ti,tk);
+  const singleName=ti<=tk?"Ingetour":"Kanak";
+  const saveMix=bestSingle-mix;
+  let html=`<b>Vše od jedné půjčovny:</b> nejlevnější je <b>${singleName}</b> za ${fmt(bestSingle)} Kč`;
+  if(people>0) html+=` (${fmt(bestSingle/people)} Kč/os.)`;
+  html+=`.`;
+  if(saveMix>0){
+    const boatWho=bi<bk?"Ingetour":"Kanak", campWho=ci<ck?"Ingetour":"Kanak";
+    html+=`<br><br><b>Rozdělením</b> (lodě ${boatWho} + ubytování ${campWho}) zaplatíš ${fmt(mix)} Kč,
+      tedy o <b>${fmt(saveMix)} Kč míň</b> — ale musíš řešit dvě místa.`;
+  } else {
+    html+=`<br><br>Rozdělovat se nevyplatí — nejlevnější je vzít vše u jedné.`;
+  }
+  html+=`<br><span style="opacity:.85;font-size:.85rem">Pozn.: u Kanak navíc dostaneš bonus v bankovkách Kanak, který tady není odečtený.</span>`;
+  $("reco").innerHTML=html;
+}
+
+// steppery (delegovaně – funguje i na dynamické)
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-step]"); if(!b) return;
+  const f=$(b.dataset.step); if(!f) return;
+  f.value=Math.max(0,(parseInt(f.value)||0)+(+b.dataset.d)); calc();
 });
-document.querySelectorAll("input[type=number]").forEach(i=>i.addEventListener("input",()=>{
-  if(["ad","teen","kid"].includes(i.id)) syncTents(); calc();
+document.querySelectorAll("input[type=number]").forEach(i=>i.addEventListener("input",calc));
+document.querySelectorAll("#seasonSeg button").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("#seasonSeg button").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on"); season=b.dataset.s; calc();
 }));
-document.querySelectorAll("#seasonSeg button").forEach(b=>{
-  b.addEventListener("click",()=>{
-    document.querySelectorAll("#seasonSeg button").forEach(x=>x.classList.remove("on"));
-    b.classList.add("on"); season=b.dataset.s; calc();
-  });
-});
-function syncTents(){
-  if(!$("autoTent").checked) return;
-  const people = val("ad")+val("teen")+val("kid");
-  $("tent").value = Math.ceil(people/2);
-}
-$("autoTent").addEventListener("change",()=>{ syncTents(); calc(); });
+["kanTransport","bag","orgDisc"].forEach(id=>$(id).addEventListener("change",calc));
 
-syncTents(); calc();
-
-/* ---------- Inge Tour – lodě ---------- */
-const SUBT = {
-  kemp:"Kemp Branná (Kanak) · ceník 2026 · pro 14 vodáků",
-  lode:"Půjčovna lodí Inge Tour · raft Colorado 450"
-};
-document.querySelectorAll("#tabs button").forEach(b=>{
-  b.addEventListener("click",()=>{
-    document.querySelectorAll("#tabs button").forEach(x=>x.classList.remove("on"));
-    b.classList.add("on");
-    const t=b.dataset.tab;
-    $("tabKemp").style.display = t==="kemp"?"block":"none";
-    $("tabLode").style.display = t==="lode"?"block":"none";
-    $("subtitle").textContent = SUBT[t];
-    if(t==="lode") calcRaft();
-  });
+$("loadExample").addEventListener("click",()=>{
+  season="h";
+  document.querySelectorAll("#seasonSeg button").forEach(x=>x.classList.toggle("on",x.dataset.s==="h"));
+  $("boatDays").value=4; $("nights").value=4; $("adults").value=14; $("kids").value=0;
+  BOATS.forEach(b=>$("q_"+b.id).value=0);
+  $("q_kanoe").value=6; $("q_kajak").value=2; $("q_raftL").value=1;
+  CAMP.forEach(c=>$("c_"+c.id).value=0);
+  $("c_stan").value=7; $("c_auto").value=3;
+  $("kanTransport").checked=true; $("bag").checked=false; $("orgDisc").checked=true; $("qtyPct").value=10;
+  calc();
 });
 
-function raftUnit(){
-  const sel=$("raftType").value;
-  $("rowCustom").style.display = sel==="custom"?"flex":"none";
-  if(sel==="custom") return val("raftPrice");
-  return parseInt(sel);
-}
-function calcRaft(){
-  const unit = raftUnit();
-  const rafts=Math.max(1,val("rafts")), days=Math.max(1,val("days")), ppl=Math.max(1,val("ppl"));
-  const base = rafts*days*unit;
-  const after1 = Math.max(0, base - val("discPpl"));
-  const qty = 1 - val("discQty")/100;
-  const after2 = Math.round(after1*qty);
-  const per = after2/ppl;
-  const fmt=n=>n.toLocaleString("cs-CZ");
-  RAFT_TOTAL = after2;
-  $("raftGrand").textContent = fmt(after2)+" Kč";
-  $("raftPP").textContent = "≈ "+fmt(Math.round(per))+" Kč na osobu · "+rafts+" raft"+(rafts>=2&&rafts<=4?"y":rafts===1?"":"ů")+" · "+ppl+" osob";
-  $("raftBreak").innerHTML = `
-    <div class="b"><span>Cena před slevou<span class="q">${rafts}× ${days} dní × ${fmt(unit)} Kč</span></span><span class="amt">${fmt(base)} Kč</span></div>
-    <div class="b"><span>Sleva za počet osob</span><span class="amt">− ${fmt(val("discPpl"))} Kč</span></div>
-    <div class="b"><span>Po 1. slevě</span><span class="amt">${fmt(after1)} Kč</span></div>
-    <div class="b"><span>Množstevní sleva (${val("discQty")} %)</span><span class="amt">− ${fmt(after1-after2)} Kč</span></div>
-    <div class="b"><span>Po 2. slevě</span><span class="amt">${fmt(after2)} Kč</span></div>`;
-  renderGrand();
-}
-function renderGrand(){
-  const fmt=n=>n.toLocaleString("cs-CZ");
-  const all = KEMP_TOTAL + RAFT_TOTAL;
-  const people = Math.max(val("ad")+val("teen")+val("kid"), val("ppl"));
-  $("allGrand").textContent = fmt(all)+" Kč";
-  $("allPP").textContent = people>0
-    ? "≈ "+fmt(Math.round(all/people))+" Kč na osobu · "+people+" lidí"
-    : "";
-  $("allBreak").innerHTML = `
-    <div class="b"><span>⛺ Kemp · Kanak</span><span class="amt">${fmt(KEMP_TOTAL)} Kč</span></div>
-    <div class="b"><span>🛶 Lodě · Inge Tour</span><span class="amt">${fmt(RAFT_TOTAL)} Kč</span></div>`;
-}
-["rafts","days","ppl","discPpl","discQty","raftPrice"].forEach(id=>{
-  $(id).addEventListener("input",calcRaft);
-});
-$("raftType").addEventListener("change",calcRaft);
-// steppery pro lodě (data-step již obsloužen výše, jen dopočítej raft po kliku)
-document.querySelectorAll("#tabLode [data-step]").forEach(b=>{
-  b.addEventListener("click",()=>setTimeout(calcRaft,0));
-});
-calcRaft();
+// plovoucí bublinky (šplouchající voda)
+(function(){
+  const box=$("bubbles"); if(!box) return;
+  for(let i=0;i<16;i++){
+    const s=document.createElement("span");
+    const size=6+Math.random()*20;
+    s.style.left=Math.random()*100+"vw";
+    s.style.width=s.style.height=size+"px";
+    s.style.animationDuration=(7+Math.random()*9)+"s";
+    s.style.animationDelay=(-Math.random()*12)+"s";
+    box.appendChild(s);
+  }
+})();
+
+buildInputs(); calc();
 </script>
 </body>
 </html>
