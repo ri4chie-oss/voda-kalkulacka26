@@ -116,6 +116,48 @@
   .reco{background:rgba(255,255,255,.16);border-radius:16px;padding:14px;margin:6px 0 12px;font-size:.9rem}
   .reco b{font-weight:800}
 
+  /* tlačítka */
+  .btnrow{display:flex;gap:10px;margin:0 0 16px}
+  .ex,.pdf{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:15px 12px;
+    border-radius:18px;font-size:.95rem;font-weight:800;cursor:pointer;border:none;
+    transition:transform .1s,box-shadow .2s}
+  .ex{background:rgba(255,255,255,.65);color:var(--accent);border:1.5px dashed rgba(94,92,230,.5);
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+  .pdf{background:linear-gradient(150deg,#ffb13a,#ff7a3d 70%,#ff5e4d);color:#fff;
+    box-shadow:0 8px 22px rgba(255,110,60,.4), inset 0 1px 0 rgba(255,255,255,.4)}
+  .ex:active,.pdf:active{transform:scale(.98)}
+
+  /* moje nabídka */
+  .offer{background:linear-gradient(150deg,rgba(10,132,255,.1),rgba(52,199,89,.1));
+    border:1px solid rgba(255,255,255,.7);border-radius:18px;padding:14px 16px;margin:8px 0 6px}
+  .offer .line{display:flex;justify-content:space-between;gap:10px;padding:6px 0;font-size:.95rem;align-items:center}
+  .offer .who{font-weight:800;font-size:.72rem;padding:3px 8px;border-radius:8px;color:#fff;margin-right:6px}
+  .offer .who.ing{background:var(--ing)} .offer .who.kan{background:var(--kan)}
+  .offer .grand{display:flex;justify-content:space-between;align-items:baseline;
+    border-top:1.5px solid var(--line);margin-top:6px;padding-top:10px;font-weight:800;font-size:1.2rem}
+  .offer .grand .pp{font-size:.8rem;color:var(--muted);font-weight:600}
+
+  /* tisk / PDF */
+  #printArea{display:none}
+  @media print{
+    @page{margin:14mm}
+    body{background:#fff!important;padding:0}
+    .bubbles{display:none!important}
+    .wrap>*:not(#printArea){display:none!important}
+    #printArea{display:block!important}
+    .p-head{display:flex;align-items:center;gap:10px;border-bottom:3px solid #0a84ff;padding-bottom:10px;margin-bottom:14px}
+    .p-head h1{font-size:20pt;margin:0;color:#0a5fc0}
+    .p-head .d{margin-left:auto;font-size:9pt;color:#555;text-align:right}
+    .p-meta{font-size:10pt;color:#333;margin-bottom:6px}
+    .p-sec{margin:14px 0}
+    .p-sec h2{font-size:12pt;margin:0 0 6px;color:#0a5fc0;border-bottom:1px solid #ddd;padding-bottom:3px}
+    .p-row{display:flex;justify-content:space-between;font-size:10.5pt;padding:3px 0}
+    .p-tot{display:flex;justify-content:space-between;font-weight:bold;font-size:13pt;
+      border-top:2px solid #333;margin-top:8px;padding-top:6px}
+    .p-note{font-size:8pt;color:#777;margin-top:18px;border-top:1px solid #eee;padding-top:8px}
+    .p-badge{font-weight:bold;color:#fff;background:#0a84ff;padding:1px 7px;border-radius:6px;font-size:9pt}
+    .p-badge.kan{background:#34c759}
+  }
   details{margin:2px 6px 18px;font-size:.84rem;color:var(--muted)}
   summary{cursor:pointer;color:var(--accent);font-weight:700;padding:6px 0}
   details h3{font-size:.86rem;margin:10px 0 4px;color:var(--txt)}
@@ -186,7 +228,9 @@
         <input id="qtyPct" type="number" min="0" max="100" step="5" value="10" style="width:58px"><button data-step="qtyPct" data-d="5">+</button></div></div>
   </div>
 
-  <button class="ex" id="loadExample">Načíst ukázkový příklad (14 lidí, 4 dny)</button>
+  <div class="btnrow">
+    <button class="ex" id="loadExample">🧭 Ukázkový příklad</button>
+  </div>
 
   <div class="card">
     <h2>🛶 Lodě — srovnání</h2>
@@ -207,6 +251,21 @@
     <div class="cmp" id="allCmp"></div>
     <div class="reco" id="reco"></div>
   </div>
+
+  <div class="card">
+    <h2>📋 Moje nabídka — vyber si půjčovny</h2>
+    <div class="row"><div><div class="lbl">🛶 Lodě od</div></div>
+      <div class="seg" id="boatProvSeg"><button data-bp="auto" class="on">Nejlevnější</button><button data-bp="ing">Ingetour</button><button data-bp="kan">Kanak</button></div></div>
+    <div class="row"><div><div class="lbl">⛺ Ubytování od</div></div>
+      <div class="seg" id="campProvSeg"><button data-cp="auto" class="on">Nejlevnější</button><button data-cp="ing">Ingetour</button><button data-cp="kan">Kanak</button></div></div>
+    <div class="offer" id="offerOut"></div>
+  </div>
+
+  <div class="btnrow">
+    <button class="pdf" id="exportPdf">📄 Stáhnout nabídku jako PDF</button>
+  </div>
+
+  <div id="printArea"></div>
 
   <details>
     <summary>Zdroje cen, mapování lodí a poznámky</summary>
@@ -238,6 +297,8 @@ const $=id=>document.getElementById(id);
 const num=id=>Math.max(0,parseInt($(id).value)||0);
 const fmt=n=>Math.round(n).toLocaleString("cs-CZ");
 let season="h"; // h = hlavní/léto, m = mimo
+let boatProv="auto", campProv="auto"; // auto = nejlevnější
+let STATE={};
 
 // ceny lodí vícedenní: [ingetour_hlavní, ingetour_mimo, kanak_hlavní, kanak_mimo]
 const BOATS=[
@@ -279,12 +340,13 @@ function calc(){
   const ii=ingIdx(), ki=kanIdx();
 
   // ---- LODĚ ----
-  let boatIng=0, boatKan=0; const blines=[];
+  let boatIng=0, boatKan=0; const blines=[]; const boatItems=[];
   BOATS.forEach(b=>{
     const q=num("q_"+b.id); if(q<=0) return;
     const si=q*days*b.p[ii], sk=q*days*b.p[ki];
     boatIng+=si; boatKan+=sk;
     blines.push(`<div class="b"><span>${q}× ${b.name}</span><span>I ${fmt(si)} · K ${fmt(sk)} Kč</span></div>`);
+    boatItems.push({txt:`${q}× ${b.name} · ${days} dní`, ing:si, kan:sk});
   });
   // Ingetour slevy
   let org=0;
@@ -305,17 +367,20 @@ function calc(){
   }
 
   // ---- UBYTOVÁNÍ ----
-  let campIng=0, campKan=0; const clines=[];
+  let campIng=0, campKan=0; const clines=[]; const campItems=[];
   const aI=adults*PERSON.adult[ii]*nights, aK=adults*PERSON.adult[ki]*nights;
   const kI=kids*PERSON.kid[ii]*nights, kK=kids*PERSON.kid[ki]*nights; // Kanak: do 8 zdarma → uživatel počítá jen 9–15
   campIng+=aI+kI; campKan+=aK+kK;
-  if(adults>0) clines.push(`<div class="b"><span>${adults}× dospělý · ${nights} n.</span><span>I ${fmt(aI)} · K ${fmt(aK)} Kč</span></div>`);
-  if(kids>0) clines.push(`<div class="b"><span>${kids}× dítě · ${nights} n.</span><span>I ${fmt(kI)} · K ${fmt(kK)} Kč</span></div>`);
+  if(adults>0){ clines.push(`<div class="b"><span>${adults}× dospělý · ${nights} n.</span><span>I ${fmt(aI)} · K ${fmt(aK)} Kč</span></div>`);
+    campItems.push({txt:`${adults}× dospělý · ${nights} nocí`, ing:aI, kan:aK}); }
+  if(kids>0){ clines.push(`<div class="b"><span>${kids}× dítě · ${nights} n.</span><span>I ${fmt(kI)} · K ${fmt(kK)} Kč</span></div>`);
+    campItems.push({txt:`${kids}× dítě · ${nights} nocí`, ing:kI, kan:kK}); }
   CAMP.forEach(c=>{
     const q=num("c_"+c.id); if(q<=0) return;
     const si=q*c.p[ii]*nights, sk=q*c.p[ki]*nights;
     campIng+=si; campKan+=sk;
     clines.push(`<div class="b"><span>${q}× ${c.name} · ${nights} n.</span><span>I ${fmt(si)} · K ${fmt(sk)} Kč</span></div>`);
+    campItems.push({txt:`${q}× ${c.name} · ${nights} nocí`, ing:si, kan:sk});
   });
 
   // ---- VÝPIS ----
@@ -339,6 +404,50 @@ function calc(){
   const totIng=boatIngNet+campIng, totKan=boatKanNet+campKan;
   renderCmp("allCmp", totIng, totKan, people);
   renderReco(boatIngNet, boatKanNet, campIng, campKan, totIng, totKan, people);
+
+  STATE={days,nights,adults,kids,people,
+    boatIng:boatIngNet,boatKan:boatKanNet,campIng,campKan,boatItems,campItems};
+  renderOffer();
+}
+
+function pick(prov,ing,kan){ return prov==="auto" ? (ing<=kan?"ing":"kan") : prov; }
+
+function renderOffer(){
+  const s=STATE; if(!s.boatItems) return;
+  const bp=pick(boatProv,s.boatIng,s.boatKan), cp=pick(campProv,s.campIng,s.campKan);
+  const boatVal=bp==="ing"?s.boatIng:s.boatKan;
+  const campVal=cp==="ing"?s.campIng:s.campKan;
+  const tot=boatVal+campVal;
+  const nm={ing:"Ingetour",kan:"Kanak"};
+  const pp=s.people>0?`${fmt(tot/s.people)} Kč / osoba`:"";
+  $("offerOut").innerHTML=`
+    <div class="line"><span><span class="who ${bp}">${nm[bp]}</span>🛶 Lodě</span><b>${fmt(boatVal)} Kč</b></div>
+    <div class="line"><span><span class="who ${cp}">${nm[cp]}</span>⛺ Ubytování</span><b>${fmt(campVal)} Kč</b></div>
+    <div class="grand"><span>Celkem mé nabídky</span><span>${fmt(tot)} Kč <span class="pp">${pp}</span></span></div>`;
+  fillPrint(bp,cp,boatVal,campVal,tot);
+}
+
+function fillPrint(bp,cp,boatVal,campVal,tot){
+  const s=STATE, nm={ing:"Ingetour",kan:"Kanak"};
+  const d=new Date().toLocaleDateString("cs-CZ");
+  const seasonTxt=season==="h"?"hlavní (léto)":"mimo sezónu";
+  const rows=a=>a.map(x=>`<div class="p-row"><span>${x.txt}</span><span>${fmt(x.prov)} Kč</span></div>`).join("")||`<div class="p-row"><span>—</span><span></span></div>`;
+  const boatRows=s.boatItems.map(x=>({txt:x.txt,prov:bp==="ing"?x.ing:x.kan}));
+  const campRows=s.campItems.map(x=>({txt:x.txt,prov:cp==="ing"?x.ing:x.kan}));
+  $("printArea").innerHTML=`
+    <div class="p-head"><h1>🛶 Vodácká nabídka</h1>
+      <div class="d">Vytvořeno: ${d}<br>Ingetour vs Kanak — srovnávač</div></div>
+    <div class="p-meta">Sezóna: <b>${seasonTxt}</b> · Dní na vodě: <b>${s.days}</b> · Nocí v kempu:
+      <b>${s.nights}</b> · Osob: <b>${s.people}</b> (dospělí ${s.adults}, děti ${s.kids})</div>
+    <div class="p-sec"><h2>🛶 Lodě <span class="p-badge ${bp}">${nm[bp]}</span></h2>
+      ${rows(boatRows)}
+      <div class="p-row" style="font-weight:bold"><span>Lodě celkem</span><span>${fmt(boatVal)} Kč</span></div></div>
+    <div class="p-sec"><h2>⛺ Ubytování <span class="p-badge ${cp}">${nm[cp]}</span></h2>
+      ${rows(campRows)}
+      <div class="p-row" style="font-weight:bold"><span>Ubytování celkem</span><span>${fmt(campVal)} Kč</span></div></div>
+    <div class="p-tot"><span>CELKEM</span><span>${fmt(tot)} Kč${s.people>0?" ("+fmt(tot/s.people)+" Kč/os.)":""}</span></div>
+    <div class="p-note">Orientační výpočet dle ceníků 2026 (Ingetour, Kanak). Není závaznou nabídkou.
+      Ceny ověřte u provozovatelů. U Kanak lze navíc získat bonus v bankovkách Kanak.</div>`;
 }
 
 function renderCmp(id,ing,kan,people){
@@ -385,6 +494,17 @@ document.querySelectorAll("#seasonSeg button").forEach(b=>b.addEventListener("cl
   b.classList.add("on"); season=b.dataset.s; calc();
 }));
 ["kanTransport","bag","orgDisc"].forEach(id=>$(id).addEventListener("change",calc));
+
+// výběr půjčovny pro mou nabídku
+document.querySelectorAll("#boatProvSeg button").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("#boatProvSeg button").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on"); boatProv=b.dataset.bp; renderOffer();
+}));
+document.querySelectorAll("#campProvSeg button").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("#campProvSeg button").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on"); campProv=b.dataset.cp; renderOffer();
+}));
+$("exportPdf").addEventListener("click",()=>{ renderOffer(); window.print(); });
 
 $("loadExample").addEventListener("click",()=>{
   season="h";
